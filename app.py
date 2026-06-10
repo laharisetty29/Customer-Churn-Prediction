@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from pandas.api.types import is_numeric_dtype, is_bool_dtype
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -27,31 +28,21 @@ data = df.copy()
 label_encoders = {}
 
 for col in data.columns:
-    if data[col].dtype == "object" or data[col].dtype == "bool":
+    if not is_numeric_dtype(data[col]):
         le = LabelEncoder()
         data[col] = le.fit_transform(data[col].astype(str))
         label_encoders[col] = le
 
-for col in data.columns:
-    data[col] = pd.to_numeric(data[col], errors="coerce")
-
-data = data.fillna(0)
+data = data.apply(pd.to_numeric, errors="coerce").fillna(0)
 
 X = data.drop("Churn", axis=1)
 y = data["Churn"].astype(int)
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
+    X, y, test_size=0.2, random_state=42
 )
 
-model = RandomForestClassifier(
-    n_estimators=100,
-    random_state=42
-)
-
+model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
 accuracy = accuracy_score(y_test, model.predict(X_test))
@@ -66,22 +57,19 @@ user_input = {}
 for col in X.columns:
     original_col = df[col]
 
-    if original_col.dtype == "object":
+    if not is_numeric_dtype(original_col):
         user_input[col] = st.sidebar.selectbox(
             col,
             sorted(original_col.astype(str).unique())
         )
-
-    elif original_col.dtype == "bool":
-        user_input[col] = st.sidebar.selectbox(
-            col,
-            [True, False]
-        )
-
     else:
+        numeric_col = pd.to_numeric(original_col, errors="coerce").fillna(0)
+
         user_input[col] = st.sidebar.number_input(
             col,
-            value=float(original_col.mean())
+            min_value=float(numeric_col.min()),
+            max_value=float(numeric_col.max()),
+            value=float(numeric_col.mean())
         )
 
 input_df = pd.DataFrame([user_input])
@@ -90,16 +78,12 @@ for col, encoder in label_encoders.items():
     if col in input_df.columns:
         input_df[col] = encoder.transform(input_df[col].astype(str))
 
-for col in input_df.columns:
-    input_df[col] = pd.to_numeric(input_df[col], errors="coerce")
-
-input_df = input_df.fillna(0)
+input_df = input_df.apply(pd.to_numeric, errors="coerce").fillna(0)
 
 st.subheader("Selected Customer Details")
 st.dataframe(pd.DataFrame([user_input]))
 
 if st.button("Predict Churn"):
-
     prediction = model.predict(input_df)[0]
     probabilities = model.predict_proba(input_df)[0]
 
