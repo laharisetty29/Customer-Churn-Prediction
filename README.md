@@ -67,7 +67,7 @@ Customer-Churn-Prediction/
 Dataset used:
 
 ```text
-Telecom Customer Churn Dataset
+churn-bigml-80.csv
 ```
 
 Target Variable:
