@@ -2,6 +2,14 @@
 
 A Machine Learning and Streamlit web application that predicts whether a customer is likely to churn or not based on telecom customer data.
 
+## 🚀 Live Demo
+
+### 🔗 Streamlit App:
+https://customer-churn-prediction-eg5qlpbnbbosyh7rt3ptef.streamlit.app/
+
+### 🔗 GitHub Repository:
+https://github.com/laharisetty29/Customer-Churn-Prediction
+
 ## Project Overview
 
 Customer churn is one of the major challenges for telecom companies. This project uses Machine Learning to analyze customer usage patterns and predict churn probability. The application provides an interactive Streamlit dashboard where users can enter customer details and instantly receive churn predictions.
